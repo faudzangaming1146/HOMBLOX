@@ -3,22 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOMBLOX - Game 3D Web</title>
+    <title>HOMBLOX - Game Web</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Mengimpor Three.js untuk Grafis 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-    <!-- UI Roblox Style -->
-    <div id="ui-overlay">
-        <div class="logo">HOMBLOX</div>
-        <div class="controls-info">
-            <p>Gunakan <b>W, A, S, D</b> untuk bergerak</p>
-            <p>Klik & Geser Mouse untuk melihat sekeliling</p>
+    <!-- Topbar Ala Roblox -->
+    <div id="roblox-topbar">
+        <div class="topbar-left">
+            <button class="icon-btn logo-btn">H</button>
+            <button class="icon-btn">💬</button>
+        </div>
+        <div class="topbar-right">
+            <span class="player-name">Player1</span>
         </div>
     </div>
 
-    <!-- Canvas Tempat Game 3D Tampil -->
+    <!-- Leaderboard (Tab Menu) -->
+    <div id="leaderboard">
+        <div class="leaderboard-header">Players</div>
+        <div class="player-row active">
+            <span class="p-name">Player1</span>
+            <span class="p-score">0</span>
+        </div>
+    </div>
+
+    <!-- Canvas Game -->
     <script src="game.js"></script>
 </body>
 </html>
