@@ -3,33 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOMBLOX - Game Web</title>
+    <title>HOMBLOX Ultimate Sandbox</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-    <!-- Topbar Ala Roblox -->
+    <!-- Topbar Roblox Klasik -->
     <div id="roblox-topbar">
         <div class="topbar-left">
-            <button class="icon-btn logo-btn">H</button>
+            <button class="icon-btn logo-btn" id="btn-reset" title="Reset Character (Esc/R)">H</button>
             <button class="icon-btn">💬</button>
+        </div>
+        <div class="topbar-center">
+            <div id="health-bar-bg"><div id="health-bar-fill"></div></div>
         </div>
         <div class="topbar-right">
             <span class="player-name">Player1</span>
         </div>
     </div>
 
-    <!-- Leaderboard (Tab Menu) -->
+    <!-- Leaderboard / Leaderstats -->
     <div id="leaderboard">
-        <div class="leaderboard-header">Players</div>
+        <div class="leaderboard-header">
+            <span>Players</span>
+            <span>Studs</span>
+            <span>Blocks</span>
+        </div>
         <div class="player-row active">
             <span class="p-name">Player1</span>
-            <span class="p-score">0</span>
+            <span id="stat-studs">0</span>
+            <span id="stat-blocks">0</span>
         </div>
     </div>
 
-    <!-- Canvas Game -->
+    <!-- Toolbar Studio (Bisa Bangut & Hapus Balok!) -->
+    <div id="toolbar">
+        <button class="tool-btn active" id="tool-view">👁️ Move</button>
+        <button class="tool-btn" id="tool-build">🧱 Build</button>
+        <button class="tool-btn" id="tool-delete">🗑️ Delete</button>
+    </div>
+
+    <!-- Crosshair Target -->
+    <div id="crosshair">+</div>
+
     <script src="game.js"></script>
 </body>
 </html>
