@@ -1,0 +1,38 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    overflow: hidden; /* Mencegah scrollbar */
+    background-color: #000;
+}
+
+#ui-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    pointer-events: none; /* Agar klik menembus UI ke game */
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: 900;
+    color: #00a2ff; /* Warna khas ala Roblox/Homblox */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 5px 15px;
+    border-radius: 8px;
+}
+
+.controls-info {
+    margin-top: 10px;
+    color: white;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+}
