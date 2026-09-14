@@ -71,6 +71,11 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.maxPolarAngle = Math.PI / 2 - 0.01;
 
+// GLOBAL MATERIALS (DIDEKLARASIKAN AWAL AGAR TIDAK ERROR)
+const skinMat = new THREE.MeshStandardMaterial({ color: 0xf5cd30 });
+const shirtMat = new THREE.MeshStandardMaterial({ color: 0x0d69ac });
+const pantsMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+
 // LIGHTING & DAY/NIGHT & WEATHER
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
 scene.add(ambientLight);
@@ -82,8 +87,8 @@ sun.shadow.mapSize.width = 2048;
 sun.shadow.mapSize.height = 2048;
 scene.add(sun);
 
-// WEATHER ENGINE (RAINKIT PARTICLE SYSTEM)
-let currentWeather = 'clear'; // 'clear' or 'rain'
+// WEATHER ENGINE
+let currentWeather = 'clear';
 const rainCount = 1500;
 const rainGeo = new THREE.BufferGeometry();
 const rainPositions = new Float32Array(rainCount * 3);
@@ -99,7 +104,7 @@ rainParticles.visible = false;
 scene.add(rainParticles);
 
 function updateWeather() {
-    if (Math.random() < 0.0003) { // Switch Weather Randomly
+    if (Math.random() < 0.0003) {
         currentWeather = currentWeather === 'clear' ? 'rain' : 'clear';
         rainParticles.visible = currentWeather === 'rain';
         document.getElementById('weather-label').innerText = currentWeather === 'rain' ? '🌧️ Rainy' : '☀️ Clear';
@@ -113,18 +118,16 @@ function updateWeather() {
             if (positions[i] < 0) positions[i] = 80;
         }
         rainParticles.geometry.attributes.position.needsUpdate = true;
-
         if (Math.random() < 0.002) playSound('thunder');
     }
 }
 
 // ==========================================
-// 3. MAP GENERATOR & COIN SYSTEM
+// 3. MAP GENERATOR & COINS
 // ==========================================
 const buildableObjects = [];
 const coinsGroup = [];
 
-// Baseplate
 const baseGeo = new THREE.BoxGeometry(160, 2, 160);
 const baseMat = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0.8 });
 const baseplate = new THREE.Mesh(baseGeo, baseMat);
@@ -132,10 +135,8 @@ baseplate.position.y = -1;
 baseplate.receiveShadow = true;
 scene.add(baseplate);
 
-// Spawn Point
 const spawnPos = new THREE.Vector3(0, 0, 0);
 
-// Coin Spawner System
 const coinGeo = new THREE.CylinderGeometry(0.8, 0.8, 0.2, 16);
 const coinMat = new THREE.MeshStandardMaterial({ color: 0xf1c40f, metalness: 0.8, roughness: 0.2 });
 
@@ -152,15 +153,13 @@ function spawnCoins() {
 spawnCoins();
 
 // ==========================================
-// 4. VEHICLE SYSTEM (DRIVEABLE CAR)
+// 4. VEHICLE SYSTEM
 // ==========================================
 const vehicles = [];
 let currentVehicle = null;
 
 function createCar(x, z) {
     const carGroup = new THREE.Group();
-    
-    // Chassis Body
     const bodyMesh = new THREE.Mesh(
         new THREE.BoxGeometry(4, 1.2, 6),
         new THREE.MeshStandardMaterial({ color: 0xe74c3c, metalness: 0.5 })
@@ -168,7 +167,6 @@ function createCar(x, z) {
     bodyMesh.position.y = 1;
     carGroup.add(bodyMesh);
 
-    // Wheels
     const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.5, 16);
     const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
     const wheelPositions = [[-2, 0.6, 2], [2, 0.6, 2], [-2, 0.6, -2], [2, 0.6, -2]];
@@ -192,7 +190,7 @@ document.getElementById('btn-spawn-vehicle').onclick = () => {
 };
 
 // ==========================================
-// 5. NPC AI SYSTEM (BOT PLAYER)
+// 5. NPC AI SYSTEM
 // ==========================================
 const npcs = [];
 function createNPC(x, z, name) {
@@ -210,34 +208,17 @@ function createNPC(x, z, name) {
     scene.add(npcGroup);
     npcs.push({ mesh: npcGroup, target: new THREE.Vector3(x, 0, z) });
 }
-createNPC(10, 10, "NoobBot");
-createNPC(-15, -10, "Guest666");
-
-function updateNPCs() {
-    npcs.forEach(npc => {
-        if (Math.random() < 0.01) {
-            npc.target.set((Math.random() - 0.5) * 60, 0, (Math.random() - 0.5) * 60);
-        }
-        npc.mesh.position.lerp(npc.target, 0.008);
-        npc.mesh.lookAt(npc.target);
-    });
-}
 
 // ==========================================
-// 6. PLAYER R6, STATS & PERKS
+// 6. PLAYER R6 & STATS
 // ==========================================
 const player = new THREE.Group();
 let health = 100, stamina = 100, coins = 500, buildsCount = 0;
 let speedMult = 1, jumpMult = 1;
 
-const skinMat = new THREE.MeshStandardMaterial({ color: 0xf5cd30 });
-const shirtMat = new THREE.MeshStandardMaterial({ color: 0x0d69ac });
-const pantsMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-
 const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), skinMat);
 head.position.y = 4.5; player.add(head);
 
-// Mahkota Emas Accessory
 const crownMesh = new THREE.Mesh(
     new THREE.CylinderGeometry(0.7, 0.5, 0.4, 6),
     new THREE.MeshStandardMaterial({ color: 0xf1c40f, metalness: 0.9 })
@@ -259,13 +240,26 @@ rightLeg.position.set(0.5, 0.9, 0); player.add(rightLeg);
 
 scene.add(player);
 
+// PANGGIL SPAWN NPC SETELAH PLAYER SIAP
+createNPC(10, 10, "NoobBot");
+createNPC(-15, -10, "Guest666");
+
+function updateNPCs() {
+    npcs.forEach(npc => {
+        if (Math.random() < 0.01) {
+            npc.target.set((Math.random() - 0.5) * 60, 0, (Math.random() - 0.5) * 60);
+        }
+        npc.mesh.position.lerp(npc.target, 0.008);
+        npc.mesh.lookAt(npc.target);
+    });
+}
+
 function showNotif(txt) {
     const el = document.getElementById('notification');
     el.innerText = txt; el.style.opacity = '1';
     setTimeout(() => el.style.opacity = '0', 2500);
 }
 
-// SHOP PURCHASE LISTENER
 document.querySelectorAll('.buy-btn').forEach(btn => {
     btn.onclick = () => {
         const price = parseInt(btn.getAttribute('data-price'));
@@ -296,7 +290,7 @@ function updateHP() {
 }
 
 // ==========================================
-// 7. EXPANDED BUILDING ENGINE (10 MATERIALS)
+// 7. EXPANDED BUILDING ENGINE
 // ==========================================
 let activeTool = 'select';
 const slots = document.querySelectorAll('.slot');
@@ -363,7 +357,11 @@ window.addEventListener('pointerdown', (e) => {
     }
 });
 
-// UI TOGGLES
+// UI TOGGLES & AVATAR COLOR BINDINGS
+document.getElementById('col-skin').addEventListener('input', (e) => skinMat.color.set(e.target.value));
+document.getElementById('col-shirt').addEventListener('input', (e) => shirtMat.color.set(e.target.value));
+document.getElementById('col-pants').addEventListener('input', (e) => pantsMat.color.set(e.target.value));
+
 document.getElementById('btn-chat-toggle').onclick = () => document.getElementById('chat-box').classList.toggle('hidden');
 document.getElementById('btn-avatar-toggle').onclick = () => document.getElementById('avatar-panel').classList.toggle('hidden');
 document.getElementById('btn-shop-toggle').onclick = () => document.getElementById('shop-panel').classList.toggle('hidden');
@@ -378,7 +376,6 @@ const keys = {};
 document.addEventListener('keydown', (e) => {
     keys[e.code] = true;
     if (e.code === 'KeyE') {
-        // Drive Vehicle Toggle
         if (currentVehicle) {
             currentVehicle = null;
             player.visible = true;
@@ -409,14 +406,12 @@ function updatePhysics() {
     document.getElementById('stamina-fill').style.width = stamina + '%';
 
     if (currentVehicle) {
-        // Vehicle Drive Controls
         if (keys['KeyW']) currentVehicle.translateZ(-0.4);
         if (keys['KeyS']) currentVehicle.translateZ(0.3);
         if (keys['KeyA']) currentVehicle.rotation.y += 0.04;
         if (keys['KeyD']) currentVehicle.rotation.y -= 0.04;
         player.position.copy(currentVehicle.position);
     } else {
-        // Player Walking Controls
         let moveX = 0, moveZ = 0;
         const dir = new THREE.Vector3();
         camera.getWorldDirection(dir); dir.y = 0; dir.normalize();
@@ -455,7 +450,6 @@ function updatePhysics() {
         }
     }
 
-    // Coin Collection Loop
     coinsGroup.forEach(coin => {
         coin.rotation.z += 0.03;
         if (player.position.distanceTo(coin.position) < 2) {
