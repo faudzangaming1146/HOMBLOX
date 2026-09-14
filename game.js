@@ -1,104 +1,173 @@
-// 1. SETUP SCENE, CAMERA, & RENDERER
+// 1. SETUP SCENE & CAMERA
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb); // Warna langit biru
+scene.background = new THREE.Color(0x6eb1ff); // Skyblue khas Roblox
+scene.fog = new THREE.Fog(0x6eb1ff, 50, 150);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true; // Mengaktifkan bayangan
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-// 2. PENCAHAYAAN (LIGHTING)
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI / 2 - 0.05;
+
+// 2. PENCAHAYAAN ALA ROBLOX STUDIO
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
 scene.add(ambientLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-dirLight.position.set(20, 40, 20);
-dirLight.castShadow = true;
-scene.add(dirLight);
+const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+sun.position.set(30, 50, 20);
+sun.castShadow = true;
+sun.shadow.mapSize.width = 2048;
+sun.shadow.mapSize.height = 2048;
+scene.add(sun);
 
-// 3. MEMBUAT MAP / BASEPLATE (Mirip Baseplate Roblox)
-const gridHelper = new THREE.GridHelper(200, 50, 0x000000, 0x444444);
-gridHelper.position.y = 0.01;
-scene.add(gridHelper);
+// 3. BASEPLATE KLASIK ROBLOX DENGAN STUDS
+const baseplateGeo = new THREE.BoxGeometry(100, 2, 100);
+const baseplateMat = new THREE.MeshStandardMaterial({ color: 0xa3a2a5, roughness: 0.9 });
+const baseplate = new THREE.Mesh(baseplateGeo, baseplateMat);
+baseplate.position.y = -1;
+baseplate.receiveShadow = true;
+scene.add(baseplate);
 
-const floorGeometry = new THREE.PlaneGeometry(200, 200);
-const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 }); // Warna dasar abu-abu
-const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.rotation.x = -Math.PI / 2;
-floor.receiveShadow = true;
-scene.add(floor);
+// Menambahkan Studs (Tonjolan Bulat di atas Baseplate)
+const studGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.1, 12);
+const studMat = new THREE.MeshStandardMaterial({ color: 0x939295 });
+const studGroup = new THREE.InstancedMesh(studGeo, studMat, 2500);
 
-// Menambahkan rintangan (Balok / Part ala Roblox)
-const createBlock = (x, y, z, color) => {
-    const geo = new THREE.BoxGeometry(4, 4, 4);
-    const mat = new THREE.MeshStandardMaterial({ color: color });
-    const block = new THREE.Mesh(geo, mat);
-    block.position.set(x, y, z);
-    block.castShadow = true;
-    block.receiveShadow = true;
-    scene.add(block);
-};
+let studIndex = 0;
+const dummy = new THREE.Object3D();
+for (let x = -49; x <= 49; x += 2) {
+    for (let z = -49; z <= 49; z += 2) {
+        dummy.position.set(x, 0.05, z);
+        dummy.updateMatrix();
+        studGroup.setMatrixAt(studIndex++, dummy.matrix);
+    }
+}
+scene.add(studGroup);
 
-// Buat beberapa rintangan/obyek
-createBlock(0, 2, -10, 0xff0000); // Balok Merah
-createBlock(5, 2, -15, 0x00ff00); // Balok Hijau
-createBlock(-5, 2, -15, 0x0000ff); // Balok Biru
+// 4. KARAKTER R6 PROPORSIONAL ROBLOX
+const player = new THREE.Group();
 
-// 4. MEMBUAT KARAKTER (Karakter Kotak Ala Roblox / Blocky)
-const playerGroup = new THREE.Group();
+const skinMat = new THREE.MeshStandardMaterial({ color: 0xf5cd30 }); // Kuning Roblox
+const torsoMat = new THREE.MeshStandardMaterial({ color: 0x0d69ac }); // Biru Tua
+const limbMat = new THREE.MeshStandardMaterial({ color: 0xa3a2a5 });  // Abu-abu
 
-// Kepala
-const headGeo = new THREE.BoxGeometry(1, 1, 1);
-const headMat = new THREE.MeshStandardMaterial({ color: 0xffcc00 }); // Warna kulit kuning
-const head = new THREE.Mesh(headGeo, headMat);
-head.position.y = 2.5;
+// Head (1x1x1)
+const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), skinMat);
+head.position.y = 4.5;
 head.castShadow = true;
-playerGroup.add(head);
+player.add(head);
 
-// Badan
-const bodyGeo = new THREE.BoxGeometry(1.5, 2, 0.8);
-const bodyMat = new THREE.MeshStandardMaterial({ color: 0x00a2ff }); // Baju Biru
-const body = new THREE.Mesh(bodyGeo, bodyMat);
-body.position.y = 1;
-body.castShadow = true;
-playerGroup.add(body);
+// Torso (2x2x1)
+const torso = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 1), torsoMat);
+torso.position.y = 2.9;
+torso.castShadow = true;
+player.add(torso);
 
-scene.add(playerGroup);
+// Left & Right Arm (1x2x1)
+const armGeo = new THREE.BoxGeometry(1, 2, 1);
+const leftArm = new THREE.Mesh(armGeo, skinMat);
+leftArm.position.set(-1.5, 2.9, 0);
+leftArm.castShadow = true;
+player.add(leftArm);
 
-// Posisi Awal Kamera
-camera.position.set(0, 5, 10);
+const rightArm = new THREE.Mesh(armGeo, skinMat);
+rightArm.position.set(1.5, 2.9, 0);
+rightArm.castShadow = true;
+player.add(rightArm);
 
-// 5. KONTROL PERGERAKAN (WASD)
+// Left & Right Leg (1x2x1)
+const legGeo = new THREE.BoxGeometry(1, 2, 1);
+const leftLeg = new THREE.Mesh(legGeo, limbMat);
+leftLeg.position.set(-0.5, 0.9, 0);
+leftLeg.castShadow = true;
+player.add(leftLeg);
+
+const rightLeg = new THREE.Mesh(legGeo, limbMat);
+rightLeg.position.set(0.5, 0.9, 0);
+rightLeg.castShadow = true;
+player.add(rightLeg);
+
+scene.add(player);
+
+// 5. FISIKA & LOGIKA GERAK
 const keys = {};
-document.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
-document.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+document.addEventListener('keydown', (e) => keys[e.code] = true);
+document.addEventListener('keyup', (e) => keys[e.code] = false);
 
-const speed = 0.15;
+let velY = 0;
+let isGrounded = true;
+let animTime = 0;
 
-function updatePlayer() {
-    if (keys['w']) playerGroup.position.z -= speed;
-    if (keys['s']) playerGroup.position.z += speed;
-    if (keys['a']) playerGroup.position.x -= speed;
-    if (keys['d']) playerGroup.position.x += speed;
+function update() {
+    let moveX = 0, moveZ = 0;
 
-    // Kamera mengikuti Karakter (Kamera Tipe Third Person)
-    camera.position.x = playerGroup.position.x;
-    camera.position.z = playerGroup.position.z + 10;
-    camera.position.y = playerGroup.position.y + 5;
-    camera.lookAt(playerGroup.position);
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+    dir.y = 0;
+    dir.normalize();
+
+    const right = new THREE.Vector3().crossVectors(camera.up, dir).negate();
+
+    if (keys['KeyW']) { moveX += dir.x; moveZ += dir.z; }
+    if (keys['KeyS']) { moveX -= dir.x; moveZ -= dir.z; }
+    if (keys['KeyA']) { moveX -= right.x; moveZ -= right.z; }
+    if (keys['KeyD']) { moveX += right.x; moveZ += right.z; }
+
+    const moving = moveX !== 0 || moveZ !== 0;
+
+    if (moving) {
+        player.position.x += moveX * 0.15;
+        player.position.z += moveZ * 0.15;
+        player.rotation.y = Math.atan2(moveX, moveZ);
+
+        // Animasi Jalan R6 Khas Roblox
+        animTime += 0.2;
+        leftArm.rotation.x = Math.sin(animTime) * 0.7;
+        rightArm.rotation.x = -Math.sin(animTime) * 0.7;
+        leftLeg.rotation.x = -Math.sin(animTime) * 0.7;
+        rightLeg.rotation.x = Math.sin(animTime) * 0.7;
+    } else {
+        leftArm.rotation.x = 0;
+        rightArm.rotation.x = 0;
+        leftLeg.rotation.x = 0;
+        rightLeg.rotation.x = 0;
+    }
+
+    // Lompat & Gravitasi
+    if (keys['Space'] && isGrounded) {
+        velY = 0.32;
+        isGrounded = false;
+    }
+
+    velY -= 0.015;
+    player.position.y += velY;
+
+    if (player.position.y <= 0) {
+        player.position.y = 0;
+        velY = 0;
+        isGrounded = true;
+    }
+
+    // Kamera Ikut Karakter
+    controls.target.copy(player.position).add(new THREE.Vector3(0, 3, 0));
+    controls.update();
 }
 
-// 6. GAME LOOP (RENDER UTAMA)
+// LOOP RENDER
 function animate() {
     requestAnimationFrame(animate);
-    updatePlayer();
+    update();
     renderer.render(scene, camera);
 }
 
+camera.position.set(0, 8, 14);
 animate();
 
-// Responsif saat ukuran jendela browser diubah
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
