@@ -3,48 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOMBLOX Ultimate Sandbox</title>
+    <title>HOMBLOX Extended Web Engine</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-    <!-- Topbar Roblox Klasik -->
-    <div id="roblox-topbar">
-        <div class="topbar-left">
-            <button class="icon-btn logo-btn" id="btn-reset" title="Reset Character (Esc/R)">H</button>
-            <button class="icon-btn">💬</button>
+
+    <!-- TOPBAR HUD -->
+    <div id="topbar">
+        <div class="tb-left">
+            <button class="tb-btn red-btn" id="btn-reset" title="Reset (R)">H</button>
+            <button class="tb-btn" id="btn-chat-toggle">💬</button>
+            <button class="tb-btn" id="btn-avatar-toggle">👕</button>
+            <button class="tb-btn" id="btn-shop-toggle">🛒</button>
+            <button class="tb-btn" id="btn-spawn-vehicle">🚗 Spawn Car</button>
         </div>
-        <div class="topbar-center">
-            <div id="health-bar-bg"><div id="health-bar-fill"></div></div>
+        <div class="tb-center">
+            <div id="hp-container">
+                <div id="hp-fill"></div>
+                <span id="hp-text">100 / 100</span>
+            </div>
+            <div id="stamina-container">
+                <div id="stamina-fill"></div>
+            </div>
         </div>
-        <div class="topbar-right">
-            <span class="player-name">Player1</span>
+        <div class="tb-right">
+            <div class="weather-tag" id="weather-label">☀️ Clear</div>
+            <div class="currency-tag">🪙 <span id="val-coins">500</span></div>
+            <span class="user-tag">Player1</span>
         </div>
     </div>
 
-    <!-- Leaderboard / Leaderstats -->
+    <!-- CHAT SYSTEM INTERAKTIF -->
+    <div id="chat-box" class="hidden">
+        <div id="chat-messages">
+            <div class="msg sys">[System]: Selamat datang di HOMBLOX Extended Engine! Tekan SHIFT untuk lari, E untuk masuk mobil.</div>
+        </div>
+        <input type="text" id="chat-input" placeholder="Tulis pesan lalu press Enter..." maxlength="120">
+    </div>
+
+    <!-- SHOP MODAL -->
+    <div id="shop-panel" class="hidden">
+        <div class="modal-header">
+            <h3>🛒 HOMBLOX Shop</h3>
+            <button class="close-btn" id="btn-close-shop">✖</button>
+        </div>
+        <div class="shop-grid">
+            <div class="shop-item">
+                <div class="item-icon">⚡</div>
+                <div class="item-name">Speed Boost</div>
+                <div class="item-desc">Lari 50% lebih cepat</div>
+                <button class="buy-btn" data-price="200" data-item="speed">200 Coins</button>
+            </div>
+            <div class="shop-item">
+                <div class="item-icon">🦘</div>
+                <div class="item-name">Super Jump</div>
+                <div class="item-desc">Lompatan 2x lebih tinggi</div>
+                <button class="buy-btn" data-price="350" data-item="jump">350 Coins</button>
+            </div>
+            <div class="shop-item">
+                <div class="item-icon">🧪</div>
+                <div class="item-name">Max Health Heal</div>
+                <div class="item-desc">Pulihkan 100 HP instan</div>
+                <button class="buy-btn" data-price="100" data-item="heal">100 Coins</button>
+            </div>
+            <div class="shop-item">
+                <div class="item-icon">👑</div>
+                <div class="item-name">Golden Crown</div>
+                <div class="item-desc">Aksesori mahkota emas</div>
+                <button class="buy-btn" data-price="1000" data-item="crown">1000 Coins</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AVATAR CUSTOMIZER -->
+    <div id="avatar-panel" class="hidden">
+        <div class="modal-header">
+            <h3>🎨 Avatar Studio</h3>
+            <button class="close-btn" id="btn-close-avatar">✖</button>
+        </div>
+        <div class="color-picker-group">
+            <label>Skin Tone:</label>
+            <input type="color" id="col-skin" value="#f5cd30">
+        </div>
+        <div class="color-picker-group">
+            <label>Shirt (Torso):</label>
+            <input type="color" id="col-shirt" value="#0d69ac">
+        </div>
+        <div class="color-picker-group">
+            <label>Pants (Legs):</label>
+            <input type="color" id="col-pants" value="#222222">
+        </div>
+    </div>
+
+    <!-- LEADERBOARD / LEADERSTATS -->
     <div id="leaderboard">
-        <div class="leaderboard-header">
-            <span>Players</span>
+        <div class="lb-header">
+            <span>Player</span>
             <span>Studs</span>
-            <span>Blocks</span>
+            <span>Builds</span>
+            <span>Coins</span>
         </div>
-        <div class="player-row active">
-            <span class="p-name">Player1</span>
+        <div class="lb-row active">
+            <span class="lb-name">Player1</span>
             <span id="stat-studs">0</span>
-            <span id="stat-blocks">0</span>
+            <span id="stat-builds">0</span>
+            <span id="stat-coins">500</span>
         </div>
     </div>
 
-    <!-- Toolbar Studio (Bisa Bangut & Hapus Balok!) -->
-    <div id="toolbar">
-        <button class="tool-btn active" id="tool-view">👁️ Move</button>
-        <button class="tool-btn" id="tool-build">🧱 Build</button>
-        <button class="tool-btn" id="tool-delete">🗑️ Delete</button>
+    <!-- HOTBAR MATERIAL BUILDER (10 MATERIAL EXPANDED) -->
+    <div id="hotbar">
+        <div class="slot active" data-tool="select"><span class="num">1</span> 🖐️ Select</div>
+        <div class="slot" data-tool="build-wood"><span class="num">2</span> 🪵 Wood</div>
+        <div class="slot" data-tool="build-brick"><span class="num">3</span> 🧱 Brick</div>
+        <div class="slot" data-tool="build-neon"><span class="num">4</span> 💡 Neon</div>
+        <div class="slot" data-tool="build-glass"><span class="num">5</span> 🪟 Glass</div>
+        <div class="slot" data-tool="build-metal"><span class="num">6</span> ⚙️ Metal</div>
+        <div class="slot" data-tool="build-gold"><span class="num">7</span> 👑 Gold</div>
+        <div class="slot" data-tool="build-water"><span class="num">8</span> 💧 Water</div>
+        <div class="slot" data-tool="build-lava"><span class="num">9</span> 🌋 Lava</div>
+        <div class="slot" data-tool="delete"><span class="num">0</span> 🗑️ Delete</div>
     </div>
 
-    <!-- Crosshair Target -->
+    <!-- NOTIFICATION & CROSSHAIR -->
+    <div id="notification">Notification Message</div>
     <div id="crosshair">+</div>
 
     <script src="game.js"></script>
